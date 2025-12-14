@@ -12,7 +12,7 @@ type TheoArchitectResponse = {
   assetsNeeded?: string[];
   nextActions?: string[];
 
-  // New “visible thinking” fields (if you added them)
+  // THEO's visible reasoning
   scanFindings?: string[];
   architectureDecision?: string;
   executionPlan?: string[];
@@ -50,13 +50,13 @@ export default function Page() {
 
       const data = await res.json();
 
-      // If your API returns { error: "..." }
+      // Handle API errors
       if (!res.ok) {
         setError(data?.error ?? "Something went wrong.");
         return;
       }
 
-      // Your API returns { architect: ... }
+      // Extract architect response
       const architect = data?.architect ?? null;
 
       if (!architect) {
@@ -122,7 +122,7 @@ export default function Page() {
     return (
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         {items.map((x, i) => (
-          <li key={`${x}-${i}`}>{x}</li>
+          <li key={i}>{x}</li>
         ))}
       </ul>
     );
@@ -138,6 +138,7 @@ export default function Page() {
       }}
     >
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
+        {/* Header */}
         <header style={{ marginBottom: 18 }}>
           <h1 style={{ margin: 0, fontSize: 36, letterSpacing: -0.6 }}>Havlow Eve Architect</h1>
           <p style={{ marginTop: 10, marginBottom: 0, opacity: 0.8, lineHeight: 1.5 }}>
@@ -147,11 +148,12 @@ export default function Page() {
           <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
             <Pill>THEO: Transformative Holistic Engine Operative</Pill>
             <Pill>Endpoint: /api/theo</Pill>
-            {result?.detectedType ? <Pill>Detected: {result.detectedType}</Pill> : null}
-            {result?.confidence ? <Pill>Confidence: {result.confidence}</Pill> : null}
+            {result?.detectedType && <Pill>Detected: {result.detectedType}</Pill>}
+            {result?.confidence && <Pill>Confidence: {result.confidence}</Pill>}
           </div>
         </header>
 
+        {/* Input Section */}
         <section
           style={{
             border: "1px solid rgba(255,255,255,0.12)",
@@ -170,6 +172,7 @@ export default function Page() {
             onChange={(e) => setPrompt(e.target.value)}
             rows={5}
             spellCheck={false}
+            placeholder="Describe your existing creative assets, audience, and revenue goals..."
             style={{
               width: "100%",
               resize: "vertical",
@@ -181,6 +184,7 @@ export default function Page() {
               fontSize: 14,
               lineHeight: 1.5,
               outline: "none",
+              fontFamily: "inherit",
             }}
           />
 
@@ -196,6 +200,7 @@ export default function Page() {
                 color: "white",
                 cursor: canRun ? "pointer" : "not-allowed",
                 fontWeight: 600,
+                fontSize: 14,
               }}
             >
               {loading ? "Running THEO…" : "Generate Strategy"}
@@ -216,17 +221,18 @@ export default function Page() {
                 background: "rgba(255,255,255,0.06)",
                 color: "white",
                 cursor: "pointer",
+                fontSize: 14,
               }}
             >
               Load example prompt
             </button>
 
             <div style={{ opacity: 0.7, fontSize: 12 }}>
-              Tip: The more “inventory” you provide, the sharper THEO gets.
+              Tip: The more "inventory" you provide, the sharper THEO gets.
             </div>
           </div>
 
-          {error ? (
+          {error && (
             <div
               style={{
                 marginTop: 12,
@@ -239,84 +245,103 @@ export default function Page() {
                 lineHeight: 1.5,
               }}
             >
-              {error}
+              <strong>Error:</strong> {error}
             </div>
-          ) : null}
+          )}
         </section>
 
+        {/* Results Section */}
         {result ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 14 }}>
-            <div style={{ gridColumn: "span 12" }}>
-              <Card title="Strategic Assessment">
-                <div style={{ fontSize: 16, lineHeight: 1.6 }}>
-                  {result.summary ?? "—"}
-                </div>
-              </Card>
-            </div>
+          <div style={{ display: "grid", gap: 14 }}>
+            {/* Strategic Assessment */}
+            <Card title="Strategic Assessment">
+              <div style={{ fontSize: 16, lineHeight: 1.6 }}>
+                {result.summary || "No summary provided"}
+              </div>
+            </Card>
 
-            <div style={{ gridColumn: "span 12" }}>
-              <Card title="SCAN">
-                <List items={result.scanFindings ?? result.assetsNeeded} />
-              </Card>
-            </div>
+            {/* SCAN */}
+            <Card title="SCAN">
+              <List items={result.scanFindings || result.assetsNeeded} />
+            </Card>
 
-            <div style={{ gridColumn: "span 12" }}>
-              <Card title="ARCHITECT">
-                <div style={{ marginBottom: 10, opacity: 0.9 }}>
-                  <strong>Decision:</strong>{" "}
-                  {result.architectureDecision ?? "—"}
-                </div>
+            {/* ARCHITECT */}
+            <Card title="ARCHITECT">
+              <div style={{ marginBottom: 14, fontSize: 15, lineHeight: 1.6 }}>
+                <strong style={{ display: "block", marginBottom: 6, opacity: 0.8 }}>Decision:</strong>
+                {result.architectureDecision || "No decision provided"}
+              </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 12 }}>
-                  <div style={{ gridColumn: "span 6" }}>
-                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>Monetization Paths</div>
-                    <List items={result.monetizationPaths} />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 8, letterSpacing: 0.5 }}>
+                    MONETIZATION PATHS
                   </div>
-                  <div style={{ gridColumn: "span 6" }}>
-                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>Pricing Ideas</div>
-                    <List items={result.pricingIdeas} />
-                  </div>
+                  <List items={result.monetizationPaths} />
                 </div>
-
-                <div style={{ marginTop: 12 }}>
-                  <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>Recommended Product</div>
-                  <div style={{ fontSize: 15 }}>{result.recommendedProduct ?? "—"}</div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 8, letterSpacing: 0.5 }}>
+                    PRICING IDEAS
+                  </div>
+                  <List items={result.pricingIdeas} />
                 </div>
-              </Card>
-            </div>
+              </div>
 
-            <div style={{ gridColumn: "span 12" }}>
-              <Card title="EXECUTE">
-                <List items={result.executionPlan ?? result.nextActions} />
-              </Card>
-            </div>
-
-            <div style={{ gridColumn: "span 12" }}>
-              <Card title="Funnel">
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: 12 }}>
-                  <div style={{ gridColumn: "span 4" }}>
-                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>Lead Magnet</div>
-                    <div>{result.funnel?.leadMagnet ?? "—"}</div>
-                  </div>
-                  <div style={{ gridColumn: "span 4" }}>
-                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>Primary CTA</div>
-                    <div>{result.funnel?.primaryCTA ?? "—"}</div>
-                  </div>
-                  <div style={{ gridColumn: "span 4" }}>
-                    <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 6 }}>Email Sequence Subjects</div>
-                    <List items={result.funnel?.emailSequenceSubjects} />
-                  </div>
+              <div>
+                <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 8, letterSpacing: 0.5 }}>
+                  RECOMMENDED PRODUCT
                 </div>
-              </Card>
-            </div>
+                <div style={{ fontSize: 15, lineHeight: 1.5 }}>
+                  {result.recommendedProduct || "—"}
+                </div>
+              </div>
+            </Card>
+
+            {/* EXECUTE */}
+            <Card title="EXECUTE">
+              <List items={result.executionPlan || result.nextActions} />
+            </Card>
+
+            {/* FUNNEL */}
+            <Card title="Funnel">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 8, letterSpacing: 0.5 }}>
+                    LEAD MAGNET
+                  </div>
+                  <div style={{ lineHeight: 1.5 }}>{result.funnel?.leadMagnet || "—"}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 8, letterSpacing: 0.5 }}>
+                    PRIMARY CTA
+                  </div>
+                  <div style={{ lineHeight: 1.5 }}>{result.funnel?.primaryCTA || "—"}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 8, letterSpacing: 0.5 }}>
+                    EMAIL SEQUENCE
+                  </div>
+                  <List items={result.funnel?.emailSequenceSubjects} />
+                </div>
+              </div>
+            </Card>
           </div>
         ) : (
-          <div style={{ opacity: 0.65, fontSize: 13, lineHeight: 1.6 }}>
+          <div
+            style={{
+              opacity: 0.65,
+              fontSize: 14,
+              lineHeight: 1.6,
+              textAlign: "center",
+              padding: "40px 20px",
+            }}
+          >
             No output yet. Paste a scenario and click <strong>Generate Strategy</strong>.
           </div>
         )}
 
-        <footer style={{ marginTop: 28, opacity: 0.55, fontSize: 12 }}>
+        {/* Footer */}
+        <footer style={{ marginTop: 32, opacity: 0.55, fontSize: 12, textAlign: "center" }}>
           Built by Havlow Eve Press • THEO runs SCAN → ARCHITECT → EXECUTE • Your API key stays server-side.
         </footer>
       </div>
